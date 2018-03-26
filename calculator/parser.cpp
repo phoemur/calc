@@ -58,11 +58,11 @@ double Parser::Factor::getValue() {return expr->getValue();}
 
 Parser::Power::Power(std::istream& in)
 {
-    values.emplace(new Factor(in));
+    values.emplace(in);
     ignoreSpace(in);
     while (in.peek() == '^') {
         getChar(in); // just ignore the operator
-        values.emplace(new Factor(in));
+        values.emplace(in);
         ignoreSpace(in);
     }
 }
@@ -70,16 +70,16 @@ Parser::Power::Power(std::istream& in)
 double Parser::Power::getValue()
 {
     while (values.size() > 1) {
-        double num2 = values.top()->getValue();
+        double num2 = values.top().getValue();
         values.pop();
-        double num1 = values.top()->getValue();
+        double num1 = values.top().getValue();
         values.pop();
         double result = std::pow(num1, num2);
         std::istringstream ss {std::to_string(result)};
-        values.emplace(new Factor(ss));
+        values.emplace(ss);
     }
     
-    return values.top()->getValue();
+    return values.top().getValue();
 }
 
 Parser::Unary::Unary(std::istream& in) 
@@ -99,24 +99,24 @@ double Parser::Unary::getValue() {return sign * value->getValue();}
 
 Parser::Term::Term(std::istream& in) 
 {
-    values.emplace_back(new Unary(in)); //construct the first value
+    values.emplace_back(in); //construct the first value
     ignoreSpace(in); //ignore preceding space
     while(in.peek() == '*' || in.peek() == '/' || in.peek() == '%') {
         ops.push_back(getChar(in)); //push back the operator
-        values.emplace_back(new Unary(in)); //push back the left operand
+        values.emplace_back(in); //push back the left operand
     }
 }
 
 double Parser::Term::getValue() 
 {
-    double ret = values[0]->getValue(); //get the first value
+    double ret = values[0].getValue(); //get the first value
     for(unsigned int i=1;i<values.size();++i) { //loop though the rest of the values
         if(ops[i-1] == '*') { //check to see which operator it is and preform the acoridng action
-            ret *= values[i]->getValue();
+            ret *= values[i].getValue();
         } else if (ops[i-1] == '/'){
-            ret /= values[i]->getValue();
+            ret /= values[i].getValue();
         } else if (ops[i-1] == '%') {
-            ret = static_cast<long>(ret) % static_cast<long>(values[i]->getValue());
+            ret = static_cast<long>(ret) % static_cast<long>(values[i].getValue());
         }
     }
     return ret;
@@ -124,21 +124,21 @@ double Parser::Term::getValue()
 
 Parser::Expression::Expression(std::istream& in) {
     ignoreSpace(in);
-    values.emplace_back(new Term(in));
+    values.emplace_back(in);
     while(in.peek() == '+' || in.peek() == '-') {
         ops.push_back(getChar(in));
-        values.emplace_back(new Term(in));
+        values.emplace_back(in);
     }
 }
 
 double Parser::Expression::getValue()
 {
-    double ret = values[0]->getValue();
+    double ret = values[0].getValue();
     for(unsigned int i=1;i<values.size();++i) {
         if(ops[i-1] == '+') {
-            ret += values[i]->getValue();
+            ret += values[i].getValue();
         } else if (ops[i-1] == '-') {
-            ret -= values[i]->getValue();
+            ret -= values[i].getValue();
         }
     }
     return ret;

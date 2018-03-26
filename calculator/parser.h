@@ -57,14 +57,14 @@ public:
 
 
 class Factor : public Interface {
-    std::unique_ptr<Interface> expr;
+    std::unique_ptr<Interface> expr; // pointer to base class -> trigger polymorphism
 public:
     Factor(std::istream& in);
     virtual double getValue() override;
 };
 
 class Power : public Interface {
-    std::stack<std::unique_ptr<Factor>> values; //power is right-associative, so use stack
+    std::stack<Factor> values; //power is right-associative, so use stack
 public:
     Power(std::istream& in);
     virtual double getValue() override;
@@ -81,7 +81,7 @@ public:
 
 
 class Term : public Interface {
-    std::vector<std::unique_ptr<Unary>> values;
+    std::vector<Unary> values;
     std::vector<char> ops;
 public:
     Term(std::istream& in);
@@ -90,7 +90,7 @@ public:
 
 
 class Expression : public Interface {
-    std::vector<std::unique_ptr<Term>> values;
+    std::vector<Term> values;
     std::vector<char> ops;
 public:
     Expression(std::istream& in);
